@@ -1,26 +1,26 @@
 import mysql.connector
 import json
 
-# Read the JSON file
+# Read and convert JSON file
 with open('data.json') as f:
-    data = json.load(f)
+    json_data = json.dumps(json.load(f))
 
-# Convert data to JSON string
-json_data = json.dumps(data)
+# Database connection parameters
+db_config = {
+    'host': 'localhost',
+    'user': 'yourusername',
+    'password': 'yourpassword',
+    'database': 'yourdatabase'
+}
 
-# Connect to the database
-conn = mysql.connector.connect(
-    host="localhost",
-    user="yourusername",
-    password="yourpassword",
-    database="yourdatabase"
-)
-cursor = conn.cursor()
+try:
+    # Connect to the database
+    with mysql.connector.connect(**db_config) as conn:
+        # Call the stored procedure
+        conn.cmd_query(f"CALL InsertProducts('{json_data}')")
 
-# Call the stored procedure
-cursor.callproc('InsertProductData', [json_data])
+        # Commit changes
+        conn.commit()
 
-# Commit and close
-conn.commit()
-cursor.close()
-conn.close()
+except mysql.connector.Error as err:
+    print(f"Error: {err}")
